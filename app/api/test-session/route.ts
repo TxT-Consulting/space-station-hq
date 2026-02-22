@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { execSync } from "child_process";
+import fs from "fs";
+import path from "path";
+
+const OPENCLAW_HOME = path.join(process.env.HOME || "/root", ".openclaw");
+const CONFIG_PATH = path.join(OPENCLAW_HOME, "openclaw.json");
 
 export async function POST(req: Request) {
   try {
@@ -8,50 +12,60 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing sessionKey or agentId" }, { status: 400 });
     }
 
+    // Read gateway config
+    const raw = fs.readFileSync(CONFIG_PATH, "utf-8");
+    const config = JSON.parse(raw);
+    const gatewayPort = config.gateway?.port || 18789;
+    const gatewayToken = config.gateway?.auth?.token || "";
+
     const startTime = Date.now();
 
     try {
-      // Use openclaw agent CLI to send a ping and check response
-      const result = execSync(
-        `openclaw agent --agent ${agentId} --session-id "${sessionKey}" --message "Health check: reply with OK" --timeout 30 --json`,
-        { timeout: 40000, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] }
-      );
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${gatewayToken}`,
+        "x-openclaw-agent-id": agentId,
+        "x-openclaw-session-key": sessionKey,
+      };
 
+      const resp = await fetch(`http://127.0.0.1:${gatewayPort}/v1/chat/completions`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          model: `openclaw:${agentId}`,
+          messages: [{ role: "user", content: "Health check: reply with OK" }],
+          max_tokens: 64,
+        }),
+        signal: AbortSignal.timeout(30000),
+      });
+
+      const data = await resp.json();
       const elapsed = Date.now() - startTime;
 
-      // Parse JSON from output — skip plugin/config noise lines, find first '{'
-      const lines = result.split("\n");
-      const jsonStartIdx = lines.findIndex(l => l.trimStart().startsWith("{"));
-      if (jsonStartIdx === -1) {
+      if (!resp.ok) {
         return NextResponse.json({
           status: "error",
           sessionKey,
           elapsed,
-          error: "No JSON in CLI output",
+          error: data.error?.message || JSON.stringify(data),
         });
       }
-      const jsonStr = lines.slice(jsonStartIdx).join("\n");
-      const data = JSON.parse(jsonStr);
-      const payloads = data?.result?.payloads || [];
-      const reply = payloads[0]?.text || "";
-      const durationMs = data?.result?.meta?.durationMs || elapsed;
-      const ok = data.status === "ok";
 
+      const reply = data.choices?.[0]?.message?.content || "";
       return NextResponse.json({
-        status: ok ? "ok" : "error",
+        status: "ok",
         sessionKey,
-        elapsed: durationMs,
-        reply: reply ? reply.slice(0, 200) : (ok ? "(no reply)" : ""),
-        error: ok ? undefined : "Agent returned error status",
+        elapsed,
+        reply: reply.slice(0, 200) || "(no reply)",
       });
-    } catch (execErr: any) {
+    } catch (err: any) {
       const elapsed = Date.now() - startTime;
-      const isTimeout = execErr.killed || execErr.signal === "SIGTERM";
+      const isTimeout = err.name === "TimeoutError" || err.name === "AbortError";
       return NextResponse.json({
         status: "error",
         sessionKey,
         elapsed,
-        error: isTimeout ? "Timeout: session not responding (30s)" : (execErr.stderr || execErr.message || "Unknown error").slice(0, 300),
+        error: isTimeout ? "Timeout: agent not responding (30s)" : (err.message || "Unknown error").slice(0, 300),
       });
     }
   } catch (err: any) {
