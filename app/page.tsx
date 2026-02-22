@@ -265,18 +265,7 @@ function AgentCard({ agent, gatewayPort, gatewayToken, t, testResult, platformTe
       <div className="flex items-center gap-3 mb-3">
         <span className="text-3xl">{agent.emoji}</span>
         <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold text-[var(--text)]">{agent.name}</h3>
-            {sessionTestResult === undefined ? (
-              <span className="text-xs text-[var(--text-muted)]">--</span>
-            ) : sessionTestResult === null ? (
-              <span className="text-xs text-[var(--text-muted)] animate-pulse">⏳</span>
-            ) : sessionTestResult.ok ? (
-              <span className="text-green-400 text-sm cursor-help" title={`${sessionTestResult.elapsed}ms${sessionTestResult.reply ? ' · ' + sessionTestResult.reply : ''}`}>✅</span>
-            ) : (
-              <span className="text-red-400 text-sm cursor-help" title={sessionTestResult.error || ''}>❌</span>
-            )}
-          </div>
+          <h3 className="text-lg font-semibold text-[var(--text)]">{agent.name}</h3>
         </div>
       </div>
 
@@ -284,7 +273,18 @@ function AgentCard({ agent, gatewayPort, gatewayToken, t, testResult, platformTe
         {agent.name !== agent.id && (
           <div>
             <span className="text-xs text-[var(--text-muted)] block mb-1">Agent ID</span>
-            <code className="text-xs text-[var(--accent)] bg-[var(--bg)] px-2 py-0.5 rounded">{agent.id}</code>
+            <div className="flex items-center gap-2">
+              <code className="text-xs text-[var(--accent)] bg-[var(--bg)] px-2 py-0.5 rounded">{agent.id}</code>
+              {sessionTestResult === undefined ? (
+                <span className="text-xs text-[var(--text-muted)]">--</span>
+              ) : sessionTestResult === null ? (
+                <span className="text-xs text-[var(--text-muted)] animate-pulse">⏳</span>
+              ) : sessionTestResult.ok ? (
+                <span className="text-green-400 text-sm cursor-help" title={`${sessionTestResult.elapsed}ms${sessionTestResult.reply ? ' · ' + sessionTestResult.reply : ''}`}>✅</span>
+              ) : (
+                <span className="text-red-400 text-sm cursor-help" title={sessionTestResult.error || ''}>❌</span>
+              )}
+            </div>
           </div>
         )}
         <div>
