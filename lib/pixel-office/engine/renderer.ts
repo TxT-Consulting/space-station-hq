@@ -225,8 +225,23 @@ export function renderScene(
   zoom: number,
   selectedAgentId: number | null,
   hoveredAgentId: number | null,
+  contributions?: ContributionData,
+  photograph?: HTMLImageElement,
 ): void {
   const drawables: ZDrawable[] = []
+
+  // Wall decorations as z-sorted drawables (zY just above row 0 walls so they render on top of walls but below characters)
+  const wallDecoZY = TILE_SIZE + 0.5
+  if (contributions && contributions.weeks.length > 0) {
+    drawables.push({ zY: wallDecoZY, draw: () => {
+      renderContributionHeatmap(ctx, contributions, offsetX, offsetY, zoom)
+    }})
+  }
+  if (photograph) {
+    drawables.push({ zY: wallDecoZY, draw: () => {
+      renderPhotograph(ctx, photograph, offsetX, offsetY, zoom)
+    }})
+  }
 
   // Furniture
   for (const f of furniture) {
@@ -762,17 +777,7 @@ export function renderFrame(
   // Draw walls + furniture + characters (z-sorted)
   const selectedId = selection?.selectedAgentId ?? null
   const hoveredId = selection?.hoveredAgentId ?? null
-  renderScene(ctx, allFurniture, characters, offsetX, offsetY, zoom, selectedId, hoveredId)
-
-  // GitHub contribution heatmap (on top wall of left room)
-  if (contributions && contributions.weeks.length > 0) {
-    renderContributionHeatmap(ctx, contributions, offsetX, offsetY, zoom)
-  }
-
-  // Photograph on right room wall
-  if (photograph) {
-    renderPhotograph(ctx, photograph, offsetX, offsetY, zoom)
-  }
+  renderScene(ctx, allFurniture, characters, offsetX, offsetY, zoom, selectedId, hoveredId, contributions, photograph)
 
   // Speech bubbles (always on top of characters)
   renderBubbles(ctx, characters, offsetX, offsetY, zoom)
