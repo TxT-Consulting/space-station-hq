@@ -125,6 +125,7 @@ export default function PixelOfficePage() {
   const agentStatsRef = useRef<Map<string, { sessionCount: number; messageCount: number; totalTokens: number; todayAvgResponseMs: number; weeklyResponseMs: number[]; weeklyTokens: number[]; lastActive: number | null }>>(new Map())
   const contributionsRef = useRef<ContributionData | null>(null)
   const photographRef = useRef<HTMLImageElement | null>(null)
+  const gatewayRef = useRef<{ port: number; token?: string }>({ port: 18789 })
   const [isEditMode, setIsEditMode] = useState(false)
   const [soundOn, setSoundOn] = useState(true)
   const [editorTick, setEditorTick] = useState(0)
@@ -329,6 +330,7 @@ export default function PixelOfficePage() {
           }
         }
         agentStatsRef.current = map
+        if (data.gateway) gatewayRef.current = { port: data.gateway.port || 18789, token: data.gateway.token }
       } catch {}
     }
     fetchStats()
@@ -488,9 +490,16 @@ export default function PixelOfficePage() {
         return tileX >= f.col && tileX < f.col + entry.footprintW &&
                tileY >= f.row && tileY < f.row + entry.footprintH
       })
+      const onPC = office.layout.furniture.some(f => {
+        if (f.type !== 'pc') return false
+        const entry = getCatalogEntry(f.type)
+        if (!entry) return false
+        return tileX >= f.col && tileX < f.col + entry.footprintW &&
+               tileY >= f.row && tileY < f.row + entry.footprintH
+      })
       const onPhoto = photographRef.current && tileX >= 10 && tileX < 17 && tileY >= -0.5 && tileY < 1
       const onHeatmap = contributionsRef.current && contributionsRef.current.username !== 'mock' && tileX >= 1 && tileX < 10 && tileY >= -0.5 && tileY < 1
-      if (canvasRef.current) canvasRef.current.style.cursor = (onCamera || id !== null || onPhoto || onHeatmap) ? 'pointer' : 'default'
+      if (canvasRef.current) canvasRef.current.style.cursor = (onCamera || onPC || id !== null || onPhoto || onHeatmap) ? 'pointer' : 'default'
     }
   }
 
@@ -518,6 +527,19 @@ export default function PixelOfficePage() {
           const img = new Image()
           img.src = `/assets/pixel-office/my-photographic-works/${idx}.webp`
           img.onload = () => { photographRef.current = img }
+        } else if (office.layout.furniture.some(f => {
+          if (f.type !== 'pc') return false
+          const entry = getCatalogEntry(f.type)
+          if (!entry) return false
+          return tileX >= f.col && tileX < f.col + entry.footprintW &&
+                 tileY >= f.row && tileY < f.row + entry.footprintH
+        })) {
+          // Click on PC — open gateway chat for main agent
+          const gw = gatewayRef.current
+          const sessionKey = 'agent:main:main'
+          let chatUrl = `http://localhost:${gw.port}/chat?session=${encodeURIComponent(sessionKey)}`
+          if (gw.token) chatUrl += `&token=${encodeURIComponent(gw.token)}`
+          window.open(chatUrl, '_blank')
         } else if (photographRef.current && tileX >= 10 && tileX < 17 && tileY >= -0.5 && tileY < 1) {
           // Click on wall photograph — fullscreen view
           setFullscreenPhoto(true)
