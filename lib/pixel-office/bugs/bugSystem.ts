@@ -530,7 +530,11 @@ export class BugSystem {
     const sample = this.pheromones.sampleDirection(bug.x, bug.y, BUG_TRAIL_FOLLOW_RADIUS)
     const enterFollowP = Math.min(1, BUG_TRAIL_FOLLOW_PROB * (dt / 0.016))
     const breakFollowP = Math.min(1, BUG_TRAIL_BREAK_PROB * (dt / 0.016))
-    if (!bug.followingTrail && sample.strength > BUG_PHEROMONE_MIN_DETECT && Math.random() < enterFollowP) {
+    const canFollowTrail = nCount >= 1
+    if (!canFollowTrail) {
+      // Prevent single-bug self-tracking loops (circling around its own pheromone).
+      bug.followingTrail = false
+    } else if (!bug.followingTrail && sample.strength > BUG_PHEROMONE_MIN_DETECT && Math.random() < enterFollowP) {
       bug.followingTrail = true
     } else if (bug.followingTrail && Math.random() < breakFollowP) {
       bug.followingTrail = false
@@ -558,7 +562,7 @@ export class BugSystem {
       }
     }
 
-    if (sample.strength > BUG_PHEROMONE_MIN_DETECT) {
+    if (canFollowTrail && sample.strength > BUG_PHEROMONE_MIN_DETECT) {
       const plen = Math.hypot(sample.x, sample.y)
       if (plen > 0.0001) {
         const followW = bug.followingTrail ? BUG_TRAIL_STEERING_WEIGHT : BUG_PHEROMONE_FOLLOW_WEIGHT
