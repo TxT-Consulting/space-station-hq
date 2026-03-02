@@ -37,6 +37,14 @@ function formatMs(ms: number): string {
   return (ms / 1000).toFixed(1) + 's'
 }
 
+type ReleaseInfo = {
+  tag: string
+  name: string
+  publishedAt: string
+  body: string
+  htmlUrl: string
+}
+
 function MiniSparkline({ data, width = 120, height = 24, color: fixedColor }: { data: number[]; width?: number; height?: number; color?: string }) {
   const hasData = data.some(v => v > 0)
   if (!hasData) return null
@@ -154,13 +162,32 @@ export default function PixelOfficePage() {
   const [showActivityHeatmap, setShowActivityHeatmap] = useState(false)
   const activityHeatmapRef = useRef<Array<{ agentId: string; grid: number[][] }> | null>(null)
   const [showPhonePanel, setShowPhonePanel] = useState(false)
-  const versionInfoRef = useRef<{ tag: string; name: string; publishedAt: string; body: string; htmlUrl: string } | null>(null)
+  const [versionInfo, setVersionInfo] = useState<ReleaseInfo | null>(null)
+  const [versionLoading, setVersionLoading] = useState(false)
+  const [versionLoadFailed, setVersionLoadFailed] = useState(false)
   const [showIdleRank, setShowIdleRank] = useState(false)
   const idleRankRef = useRef<Array<{ agentId: string; onlineMinutes: number; activeMinutes: number; idleMinutes: number; idlePercent: number }> | null>(null)
   const floatingCommentsRef = useRef<Array<{ key: string; text: string; x: number; y: number; opacity: number }>>([])
   const floatingCodeRef = useRef<Array<{ key: string; text: string; x: number; y: number; opacity: number }>>([])
   const [floatingTick, setFloatingTick] = useState(0)
   const forceEditorUpdate = useCallback(() => setEditorTick(t => t + 1), [])
+
+  const fetchVersionInfo = useCallback(async (forceLatest = false) => {
+    setVersionLoading(true)
+    setVersionLoadFailed(false)
+    try {
+      const url = forceLatest ? '/api/pixel-office/version?force=1' : '/api/pixel-office/version'
+      const res = await fetch(url, { cache: 'no-store' })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      if (!data || !data.tag) throw new Error('Invalid version payload')
+      setVersionInfo(data)
+    } catch {
+      setVersionLoadFailed(true)
+    } finally {
+      setVersionLoading(false)
+    }
+  }, [])
 
   // Load saved layout and sound preference
   useEffect(() => {
@@ -419,11 +446,8 @@ export default function PixelOfficePage() {
 
   // Preload version info
   useEffect(() => {
-    fetch('/api/pixel-office/version')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data && data.tag) versionInfoRef.current = data })
-      .catch(() => {})
-  }, [])
+    void fetchVersionInfo()
+  }, [fetchVersionInfo])
 
   // Preload idle rank data
   useEffect(() => {
@@ -791,6 +815,7 @@ export default function PixelOfficePage() {
         })) {
           // Click on phone — show version info
           setShowPhonePanel(true)
+          void fetchVersionInfo(true)
         } else if (office.layout.furniture.some(f => {
           if (f.type !== 'sofa') return false
           const entry = getCatalogEntry(f.type)
@@ -1374,7 +1399,7 @@ export default function PixelOfficePage() {
 
         {/* Phone panel — version info */}
         {showPhonePanel && !isEditMode && (() => {
-          const info = versionInfoRef.current
+          const info = versionInfo
           return (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40" onClick={() => setShowPhonePanel(false)}>
               <div className="w-80 max-h-[80%] overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-2xl p-4" onClick={e => e.stopPropagation()}>
@@ -1382,8 +1407,12 @@ export default function PixelOfficePage() {
                   <span className="font-semibold text-[var(--text)]">📱 OpenClaw Latest</span>
                   <button onClick={() => setShowPhonePanel(false)} className="text-[var(--text-muted)] hover:text-[var(--text)] text-lg leading-none">×</button>
                 </div>
-                {!info ? (
+                {!info && versionLoading ? (
                   <div className="text-xs text-[var(--text-muted)] py-8 text-center">{t('common.loading')}</div>
+                ) : !info && versionLoadFailed ? (
+                  <div className="text-xs text-[var(--text-muted)] py-8 text-center">{t('common.loadError')}</div>
+                ) : !info ? (
+                  <div className="text-xs text-[var(--text-muted)] py-8 text-center">{t('common.noData')}</div>
                 ) : (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
