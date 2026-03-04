@@ -169,7 +169,8 @@ const MOBILE_MAX_ZOOM = 6
 const MOBILE_FIT_PADDING_PX = 2
 const MOBILE_TOP_EXTRA_TILES = 0.5
 const MOBILE_VIEW_NUDGE_Y_PX = -10
-const DESKTOP_TOP_EXTRA_TILES = 0.5
+const DESKTOP_TOP_EXTRA_TILES = 1.0
+const DESKTOP_TOP_SAFE_PADDING_PX = 4
 const CODE_SNIPPET_LIFETIME_SEC = 5.5
 const SRE_BLACKWORD_MAX_FLOAT_DIST_PX = 320
 const FLOATING_TICK_INTERVAL_DESKTOP_MS = 48
@@ -482,7 +483,7 @@ export default function PixelOfficePage() {
         const mapH = rows * TILE_SIZE * zoomRef.current
         const centerOffsetY = (height - mapH) / 2
         const topExtraPx = DESKTOP_TOP_EXTRA_TILES * TILE_SIZE * zoomRef.current
-        const minPanY = topExtraPx - centerOffsetY
+        const minPanY = topExtraPx + DESKTOP_TOP_SAFE_PADDING_PX - centerOffsetY
         const maxPanY = height - (centerOffsetY + mapH)
         const targetPanY = minPanY > maxPanY
           ? minPanY
@@ -1918,7 +1919,7 @@ export default function PixelOfficePage() {
             <div className={modalOverlayClass} onClick={handleCloseTokenRankOverlay}>
               <div className={modalPanelClass("w-80", "max-h-[78%]")} onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-semibold text-[var(--text)]">📊 Token {t('agent.tokenUsage')}</span>
+                  <span className="font-semibold text-[var(--text)]">📊 {t('agent.tokenUsage')}</span>
                   <button onClick={() => setShowTokenRank(false)} className="text-[var(--text-muted)] hover:text-[var(--text)] text-lg leading-none">×</button>
                 </div>
                 {ranked.length === 0 ? (
