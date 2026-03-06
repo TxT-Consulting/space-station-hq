@@ -464,7 +464,7 @@ export async function GET() {
         return {
           id: providerId,
           api: provider.api,
-          accessMode: "api_key",
+          accessMode: authProviderIds.has(providerId) ? "auth" : "api_key",
           models,
           usedBy,
         };
@@ -517,9 +517,10 @@ export async function GET() {
         providers.push(target);
       }
 
-      if (!target.accessMode) {
-        target.accessMode = authProviderIds.has(providerId) ? "auth" : "api_key";
-      }
+      // auth profile should take precedence in UI access-mode labeling.
+      target.accessMode = authProviderIds.has(providerId)
+        ? "auth"
+        : (target.accessMode || "api_key");
 
       for (const m of inferredModels) {
         const exists = target.models.find((x: any) => x.id === m.id);
