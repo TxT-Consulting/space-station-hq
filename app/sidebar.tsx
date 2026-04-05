@@ -480,7 +480,7 @@ export function Sidebar() {
                 <div className="text-[10px] text-[var(--text-muted)] truncate">
                   {pathname === "/" && mobileAgentCount !== null
                     ? `${mobileAgentCount} ${t("home.agentCount")}`
-                    : mobileCurrent ? t(mobileCurrent.labelKey) : "BOT DASHBOARD"}
+                    : mobileCurrent ? t(mobileCurrent.labelKey) : "STATION HQ"}
                 </div>
               </div>
             </Link>
@@ -653,7 +653,10 @@ export function Sidebar() {
                   </span>
                   <div>
                     <div className="text-sm font-bold text-[var(--text)] tracking-wide">OPENCLAW</div>
-                    <div className="text-[10px] text-[var(--text-muted)] tracking-wider">BOT DASHBOARD</div>
+                    <div className="text-[10px] text-[var(--text-muted)] tracking-wider flex items-center gap-1.5">
+                      <span className="station-online-dot" />
+                      STATION HQ
+                    </div>
                   </div>
                 </Link>
                 <button
@@ -691,10 +694,10 @@ export function Sidebar() {
                         key={item.href}
                         href={item.href}
                         title={collapsed ? t(item.labelKey) : undefined}
-                        className={`flex items-center rounded-lg text-sm transition-colors ${
+                        className={`station-nav-item flex items-center rounded-lg text-sm ${
                           active
-                            ? "bg-[var(--accent)]/15 text-[var(--accent)] font-medium"
-                            : "text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg)]"
+                            ? "active bg-[var(--accent)]/15 text-[var(--accent)] font-medium"
+                            : "text-[var(--text-muted)] hover:bg-[var(--bg)]"
                         }`}
                         style={{
                           padding: collapsed ? "8px 0" : "8px 12px",

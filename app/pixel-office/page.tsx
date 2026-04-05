@@ -280,6 +280,16 @@ export default function PixelOfficePage() {
   const [isMobileViewport, setIsMobileViewport] = useState(false)
   const forceEditorUpdate = useCallback(() => setEditorTick(t => t + 1), [])
 
+  const [stars] = useState(() =>
+    Array.from({ length: 80 }, (_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      size: Math.random() * 2 + 1,
+      opacity: Math.random() * 0.7 + 0.3,
+    }))
+  )
+
   const fetchVersionInfo = useCallback(async (forceLatest = false) => {
     setVersionLoading(true)
     setVersionLoadFailed(false)
@@ -1806,7 +1816,23 @@ export default function PixelOfficePage() {
       </div>
 
       {/* Canvas */}
-      <div ref={containerRef} className="flex-1 relative overflow-hidden bg-[#1a1a2e]">
+      <div ref={containerRef} className="flex-1 relative overflow-hidden bg-[#0a0a1a]" style={{ boxShadow: '0 0 20px var(--cyan)' }}>
+        {/* Star field */}
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: -1 }}>
+          {stars.map(star => (
+            <div
+              key={star.id}
+              className="absolute rounded-full bg-white"
+              style={{
+                left: star.left,
+                top: star.top,
+                width: `${star.size}px`,
+                height: `${star.size}px`,
+                opacity: star.opacity,
+              }}
+            />
+          ))}
+        </div>
         <canvas ref={canvasRef}
           onMouseMove={handleMouseMove}
           onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}
@@ -1816,7 +1842,7 @@ export default function PixelOfficePage() {
           onPointerCancel={handlePointerUp}
           onContextMenu={handleContextMenu}
           className="w-full h-full"
-          style={{ touchAction: 'none' }} />
+          style={{ touchAction: 'none', filter: 'hue-rotate(180deg) saturate(1.5)' }} />
         {!officeReady && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#1a1a2e]/85 pointer-events-none">
             <div className="px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--card)] text-sm text-[var(--text-muted)]">
@@ -2115,7 +2141,9 @@ export default function PixelOfficePage() {
                           <span className="text-[var(--text)] font-mono">{formatTokens(a.tokens)}</span>
                         </div>
                         <div className="w-full h-2 rounded-full bg-[var(--bg)] overflow-hidden">
-                          <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${(a.tokens / maxTokens) * 100}%` }} />
+                          {(() => { const pct = (a.tokens / maxTokens) * 100; return (
+                            <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${pct}%`, boxShadow: pct > 80 ? '0 0 6px var(--orange)' : '0 0 6px var(--green)' }} />
+                          ); })()}
                         </div>
                       </div>
                     ))}

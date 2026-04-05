@@ -1,27 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap");
 @import "tailwindcss";
 
 :root {
-  --bg: #0f172a;
-  --card: #1e293b;
-  --border: #334155;
-  --text: #f1f5f9;
-  --text-muted: #94a3b8;
-  --accent: #38bdf8;
-  --accent2: #a78bfa;
-  --green: #4ade80;
-  --orange: #fb923c;
+  --bg: #0a0a1a;
+  --bg-panel: #0f0f2a;
+  --bg-card: #12122e;
+  --card: #12122e;
+  --border: #00d4ff;
+  --border-dim: #1a3a4a;
+  --cyan: #00d4ff;
+  --purple: #7c3aed;
+  --green: #00ff88;
+  --orange: #ff6b35;
+  --red: #ff3355;
+  --text: #e0e0ff;
+  --text-dim: #8a8aaa;
+  --text-muted: #8a8aaa;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --glow-cyan: 0 0 10px #00d4ff, 0 0 20px rgba(0,212,255,0.3);
+  --glow-purple: 0 0 10px #7c3aed;
+  --font-pixel: "Share Tech Mono", "Courier New", monospace;
 }
 
 [data-theme="light"] {
   --bg: #f3f6fb;
+  --bg-panel: #f3f6fb;
+  --bg-card: #ffffff;
   --card: #ffffff;
-  --border: #cbd5e1;
+  --border: #0369a1;
+  --border-dim: #cbd5e1;
+  --cyan: #0369a1;
+  --purple: #7c3aed;
+  --green: #15803d;
+  --orange: #c2410c;
+  --red: #b91c1c;
   --text: #0b1220;
+  --text-dim: #475569;
   --text-muted: #475569;
   --accent: #0369a1;
   --accent2: #7c3aed;
-  --green: #15803d;
-  --orange: #c2410c;
+  --glow-cyan: none;
+  --glow-purple: none;
 }
 
 /* Improve readability for hard-coded dark-theme utility colors in light mode. */
@@ -64,27 +84,38 @@
 [data-theme="light"] .bg-blue-500\/10 { background-color: rgba(59, 130, 246, 0.12) !important; }
 [data-theme="light"] .bg-purple-500\/10 { background-color: rgba(168, 85, 247, 0.12) !important; }
 
-/* Pixel Office top agent chips: explicit contrast control for both themes */
+/* Space station status animations */
+@keyframes station-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--green); }
+  50% { opacity: 0.5; box-shadow: 0 0 12px var(--green), 0 0 20px rgba(0,255,136,0.4); }
+}
+
+@keyframes station-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* Pixel Office / Space Station top agent chips */
 .pixel-agent-chip-state {
   opacity: 0.82;
 }
 
 .pixel-agent-chip-working {
-  background: rgba(34, 197, 94, 0.12);
-  border-color: rgba(34, 197, 94, 0.35);
-  color: #4ade80;
+  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.35);
+  color: #00d4ff;
 }
 
 .pixel-agent-chip-idle {
-  background: rgba(250, 204, 21, 0.14);
-  border-color: rgba(250, 204, 21, 0.35);
-  color: #facc15;
+  background: rgba(0, 255, 136, 0.10);
+  border-color: rgba(0, 255, 136, 0.30);
+  color: #00ff88;
 }
 
 .pixel-agent-chip-neutral {
-  background: rgba(100, 116, 139, 0.22);
-  border-color: rgba(148, 163, 184, 0.42);
-  color: #e2e8f0;
+  background: rgba(138, 138, 170, 0.14);
+  border-color: rgba(138, 138, 170, 0.32);
+  color: #e0e0ff;
 }
 
 [data-theme="light"] .pixel-agent-chip-working {
@@ -105,10 +136,25 @@
   color: #1f2937;
 }
 
+/* Status indicator animations */
+.status-dot-online {
+  animation: station-pulse 2s ease-in-out infinite;
+}
+
+.status-dot-error {
+  animation: station-blink 1s step-start infinite;
+}
+
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #0a0a1a;
+  color: #e0e0ff;
+  font-family: var(--font-pixel);
+}
+
+/* Apply space station font to headings and panel titles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-pixel);
+  letter-spacing: 0.05em;
 }
 
 .sidebar {
@@ -117,8 +163,9 @@ body {
   left: 0;
   bottom: 0;
   flex-direction: column;
-  border-right: 1px solid var(--border);
-  background: var(--card);
+  border-right: 1px solid var(--cyan);
+  box-shadow: 2px 0 12px rgba(0, 212, 255, 0.15);
+  background: var(--bg);
   z-index: 40;
   transition: width 0.2s ease;
 }
@@ -131,6 +178,48 @@ body {
 
 .sidebar-footer {
   flex-shrink: 0;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-dim);
   padding: 12px 16px;
+}
+
+/* Nav item hover: cyan glow + left border */
+.station-nav-item {
+  border-left: 2px solid transparent;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  font-family: var(--font-pixel);
+  letter-spacing: 1px;
+}
+
+.station-nav-item:hover {
+  border-left-color: var(--cyan) !important;
+  color: var(--cyan) !important;
+  box-shadow: inset 0 0 10px rgba(0, 212, 255, 0.08);
+}
+
+.station-nav-item.active {
+  border-left-color: var(--cyan);
+}
+
+/* Scanline overlay for panels */
+.station-panel {
+  border: 1px solid var(--border);
+  box-shadow: var(--glow-cyan);
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255,255,255,0.02) 0,
+    rgba(255,255,255,0.02) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* Online indicator dot */
+.station-online-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: station-pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
 }
