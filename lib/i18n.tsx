@@ -17,7 +17,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "nav.monitor": "監控",
     "nav.sessions": "會話列表",
     "nav.stats": "訊息統計",
-    "nav.pixelOffice": "太空站",
+    "nav.pixelOffice": "像素辦公室",
     "nav.config": "設定",
     "nav.skills": "技能管理",
     "nav.alerts": "警報中心",
@@ -251,7 +251,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "gateway.fetchError": "無法檢查 Gateway 狀態",
 
     // pixel office
-    "pixelOffice.title": "OpenClaw 太空站",
+    "pixelOffice.title": "OpenClaw Agents 辦公室",
     "pixelOffice.editMode": "編輯版面",
     "pixelOffice.exitEdit": "退出編輯",
     "pixelOffice.save": "儲存",
@@ -261,7 +261,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "pixelOffice.sound": "音效",
     "pixelOffice.resetView": "重設視圖",
     "pixelOffice.state.working": "工作中",
-    "pixelOffice.state.idle": "待機中",
+    "pixelOffice.state.idle": "摸魚中",
     "pixelOffice.state.offline": "下班了",
     "pixelOffice.state.waiting": "等待中",
     "pixelOffice.tempWorker": "臨時工",
@@ -305,7 +305,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "nav.monitor": "监控",
     "nav.sessions": "会话列表",
     "nav.stats": "消息统计",
-    "nav.pixelOffice": "太空站",
+    "nav.pixelOffice": "像素办公室",
     "nav.config": "配置",
     "nav.skills": "技能管理",
     "nav.alerts": "告警中心",
@@ -539,7 +539,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "gateway.fetchError": "无法检查 Gateway 状态",
 
     // pixel office
-    "pixelOffice.title": "OpenClaw 太空站",
+    "pixelOffice.title": "OpenClaw Agents办公室",
     "pixelOffice.editMode": "编辑布局",
     "pixelOffice.exitEdit": "退出编辑",
     "pixelOffice.save": "保存",
@@ -549,7 +549,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "pixelOffice.sound": "音效",
     "pixelOffice.resetView": "重置视图",
     "pixelOffice.state.working": "工作中",
-    "pixelOffice.state.idle": "待机中",
+    "pixelOffice.state.idle": "摸鱼中",
     "pixelOffice.state.offline": "下班了",
     "pixelOffice.state.waiting": "等待中",
     "pixelOffice.tempWorker": "临时工",
@@ -593,7 +593,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "nav.monitor": "Monitor",
     "nav.sessions": "Sessions",
     "nav.stats": "Statistics",
-    "nav.pixelOffice": "Space Station",
+    "nav.pixelOffice": "Pixel Office",
     "nav.config": "Config",
     "nav.skills": "Skills",
     "nav.alerts": "Alerts",
@@ -827,7 +827,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "gateway.fetchError": "Cannot check Gateway status",
 
     // pixel office
-    "pixelOffice.title": "OpenClaw Space Station",
+    "pixelOffice.title": "OpenClaw Agents Office",
     "pixelOffice.editMode": "Edit Layout",
     "pixelOffice.exitEdit": "Exit Edit",
     "pixelOffice.save": "Save",
@@ -837,7 +837,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "pixelOffice.sound": "Sound",
     "pixelOffice.resetView": "Reset View",
     "pixelOffice.state.working": "Working",
-    "pixelOffice.state.idle": "Standby",
+    "pixelOffice.state.idle": "Idle",
     "pixelOffice.state.offline": "Offline",
     "pixelOffice.state.waiting": "Waiting",
     "pixelOffice.tempWorker": "Temp",
@@ -878,18 +878,17 @@ interface I18nContextType {
 }
 
 const I18nContext = createContext<I18nContextType>({
-  locale: "en",
+  locale: "zh",
   setLocale: () => {},
   t: (key) => key,
 });
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+  const [locale, setLocaleState] = useState<Locale>("zh");
 
   useEffect(() => {
     const saved = localStorage.getItem("locale") as Locale;
     if (saved && (saved === "zh-TW" || saved === "zh" || saved === "en")) {
-      // default to en if nothing saved
       setLocaleState(saved);
     }
   }, []);
